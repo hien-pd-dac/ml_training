@@ -3,22 +3,25 @@ import numpy as np
 
 
 def get_data(path):
-	# TODO:
-	return
+	with open(path) as f:
+		array = [[float(line.split()[i]) for i in range(len(line.split()))] 
+				for line in f.read().splitlines()]
+		Y = [array[i][-1] for i in range(len(array))]
+		X = [array[i][1:16] for i in range(len(array))]
+		return X, Y
 
 def normalize_and_add_ones(X):
 	X = np.array(X)
 	X_max = np.array([[np.amax(X[:, column_id]) 
 		for column_id in range(X.shape[1])] 
 		for _ in range(X.shape[0])])
-	X_min = np.array([[np.amin(X[: column_id])
+	X_min = np.array([[np.amin(X[:, column_id])
 		for column_id in range(X.shape[1])]
 		for _ in range(X.shape[0])])
-
 	X_normalized = (X - X_min) / (X_max - X_min)
 
-	ones = np.array([[i] for _ in range(X_normalized.shape[0])])
-	return np.column_stack(ones, X_normalized)
+	ones = np.array([[1] for _ in range(X_normalized.shape[0])])
+	return np.column_stack((ones, X_normalized))
 
 
 class RidgeRegression:
@@ -81,6 +84,7 @@ if __name__ == '__main__':
 	X, Y = get_data(path='../datasets/death-rates-data.txt')
 
 	X = normalize_and_add_ones(X)
+
 	X_train, Y_train = X[:50], Y[:50]
 	X_test, Y_test = X[50:], Y[50:]
 
@@ -93,3 +97,5 @@ if __name__ == '__main__':
 	Y_predicted = ridge_regression.predict(W=W_learned, X_new=X_test)
 
 	print(ridge_regression.compute_RSS(Y_new=Y_test, Y_predicted=Y_predicted))
+
+
